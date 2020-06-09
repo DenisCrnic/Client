@@ -4,7 +4,7 @@ from main import main
 # from main import main
 
 def download_and_install_update_if_available():
-    o = ota_updater.OTAUpdater('https://github.com/DenisCrnic/ota_test/')
+    o = ota_updater.OTAUpdater('https://github.com/DenisCrnic/SECCS_client/')
     o.download_and_install_update_if_available('Denis', 'ljubljana')
     o.check_for_update_to_install_during_next_reboot()
 
