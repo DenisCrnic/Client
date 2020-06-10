@@ -8,18 +8,19 @@ import esp
 esp.osdebug(None)
 import gc
 gc.collect()
+import _thread
+from main import main
 
 class MQTT:
     def __init__(self, server_ip):
         self.server_ip = server_ip
         self.client_id = ubinascii.hexlify(machine.unique_id())
         self.client = MQTTClient(self.client_id, self.server_ip)
-        self.msg = ""
-        self.topic = ""
         try:
             self.connect()
         except OSError as e:
             self.restart_and_reconnect()
+        _thread.start_new_thread(self.check_message, ())
         
 
     def connect(self):
@@ -32,13 +33,16 @@ class MQTT:
         self.client.subscribe(topic)
 
     def sub_cb(self, topic, message):
-        self.topic, self.msg = topic, message
+        print("to sikundo je prispelo sporocilo")
+        main.on_message(topic, message)
 
     def restart_and_reconnect(self):
         print('Failed to connect to MQTT broker. Reconnecting...')
-        time.sleep(5)
+        time.sleep(10)
         machine.reset()
 
     def check_message(self):
-        self.client.check_msg()
+        while True:
+            self.client.check_msg()
+            time.sleep(0.1)
         
