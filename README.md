@@ -1,1 +1,1 @@
-# OTA_test
+# SECCS Client

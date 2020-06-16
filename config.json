@@ -1,0 +1,13 @@
+
+
+{
+    "wifi": {
+        "ssid": "Denis",
+        "password": "ljubjana",
+        "hostname": "seccs_client"
+    },
+
+    "mqtt": {
+        "server-ip": "192.168.1.150"
+    }
+}

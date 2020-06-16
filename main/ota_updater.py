@@ -36,20 +36,20 @@ class OTAUpdater:
                 machine.reset() # automatically reboot when finding new version
             
 
-    def download_and_install_update_if_available(self, ssid, password):
+    def download_and_install_update_if_available(self):
         try:
             if 'next' in os.listdir(self.module):
                 if '.version_on_reboot' in os.listdir(self.modulepath('next')):
                     latest_version = self.get_version(self.modulepath('next'), '.version_on_reboot')
                     print('New update found: ', latest_version)
-                    self._download_and_install_update(latest_version, ssid, password)
+                    self._download_and_install_update(latest_version)
             else:
                 print('No new updates found...')
         except:
             print("Update already downloaded")
             pass
 
-    def _download_and_install_update(self, latest_version, ssid, password):
+    def _download_and_install_update(self, latest_version):
         self.download_all_files(self.github_repo + '/contents/' + self.main_dir, latest_version)
         self.rmtree(self.modulepath(self.main_dir))
         os.rename(self.modulepath('next/.version_on_reboot'), self.modulepath('next/.version'))
