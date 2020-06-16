@@ -13,7 +13,7 @@ class Main:
     # Input sensors
     self._pins = (36, 39, 34)
     self.topics = ('SECCS/client/load_1', 'SECCS/client/load_2', 'SECCS/client/load_3')
-    self.CLIENT_root_topic = b'SECCS/client_2'
+    self.CLIENT_root_topic = b'SECCS/client'
     self.input_devices = [ADC(Pin(x)) for x in self._pins]
 
     # Nastavi branje 0 - 3.6 V (default 0 - 1 V)
