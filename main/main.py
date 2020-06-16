@@ -12,7 +12,7 @@ class Main:
   def __init__(self):
     # Input sensors
     self._pins = (36, 39, 34)
-    self.topics = ('SECCS/client_2/load_1', 'SECCS/client_2/load_2', 'SECCS/client_2/load_3')
+    self.topics = ('SECCS/client/load_1', 'SECCS/client/load_2', 'SECCS/client/load_3')
     self.CLIENT_root_topic = b'SECCS/client_2'
     self.input_devices = [ADC(Pin(x)) for x in self._pins]
 
