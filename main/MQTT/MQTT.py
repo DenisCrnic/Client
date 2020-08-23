@@ -36,7 +36,6 @@ class MQTT:
 
         self.server_ip = server_ip
         self.client_id = ubinascii.hexlify(machine.unique_id())
-        self.client = MQTTClient(self.client_id, self.server_ip, keepalive=15)
         self.led = LED_indicator.LED_indicator(4, 0)
         self.led.set_state(3)
         self.mqtt_state = False
@@ -47,6 +46,8 @@ class MQTT:
 
     def connect(self):
         try:
+            self.log.info("0")
+            self.client = MQTTClient(self.client_id, self.server_ip, keepalive=15)
             self.log.info("1")
             self.client.set_last_will(self.MQTT_STATE_TOPIC, '0', retain=True)
             self.log.info("2")
@@ -76,7 +77,7 @@ class MQTT:
         # isto kot while not self.mqtt_state, le da kličemo dodatno funkcijo
         # da lahko upravjamo z indentifikacijsko led diodo
         while not self.isConnected():
-            time.sleep(5)
+            # time.sleep(2)
             self.connect()
 
     def sub_cb(self, topic, message):
@@ -122,14 +123,17 @@ class MQTT:
                     self.client.check_msg()
                 
                 else:
-                    #self.log.info("Sporocilo NI prispelo!!!!!!!")
+                    self.log.info("Sporocilo NI prispelo!!!!!!!")
                     # Če že 20 sec ni bilo sporočila, pingni, ter poslušaj odgovor
                     self.number_of_fails += 1
                     # nmesto pinga ustvari ping topic
+                    self.log.error("ping 1")
                     self.ping()
+                    self.log.error("ping 2")
                     time.sleep(0.2)
                     while self.client.check_msg():
-                        pass
+                        self.log.error("ping 3")
+                        # pass
 
                     # Ko dovoljkrat ne dobimo odgovora na ping pomeni da se je server sesul
                     

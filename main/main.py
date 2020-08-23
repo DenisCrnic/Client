@@ -60,7 +60,7 @@ class Main:
 
   def start(self):
     self.mqtt_connect()
-    self.web = Web.Web("192.168.1.89") # Obtain any IP or hostname from wifi initialisation
+    self.web = Web.Web("192.168.1.82") # Obtain any IP or hostname from wifi initialisation
 
 main = Main()
 
