@@ -1,4 +1,7 @@
 import sys
+import time
+import uos
+import uerrno
 
 CRITICAL = 50
 ERROR    = 40
@@ -14,8 +17,6 @@ _level_dict = {
     INFO: "INFO",
     DEBUG: "DEBUG",
 }
-
-_stream = sys.stderr
 
 class Logger:
 
@@ -36,13 +37,47 @@ class Logger:
     def isEnabledFor(self, level):
         return level >= (self.level or _level)
 
+    def check_log_size(self, log_file, max_log_size):
+        while(uos.stat(log_file)[6] > max_log_size):
+            print("Log file is TOO Large")
+            print("Opening original file")
+            with open(log_file, 'r') as original_file:
+                data = original_file.read().splitlines(True)
+                print("Closing original file")
+                original_file.close()
+                
+            print("Opening new file")
+            with open(log_file, 'w') as new_file:
+                print("Writing new file")
+                for line in data[1:]:
+                    new_file.write(line)
+                print("Closing new file")
+                new_file.close()
+            print("OK")
+
     def log(self, level, msg, *args):
         if level >= (self.level or _level):
-            _stream.write("%s:%s:" % (self._level_str(level), self.name))
+            try:
+                print(uos.stat("/main/web_files/log.html")[6])
+            except OSError as exc:
+                print(exc)
+                if exc.args[0] == uerrno.ENOENT:
+                    print("File Doesn't exist, creating one")
+                    temp_file = open("/main/web_files/log.html", "w")
+                    temp_file.close()
+                    print("File created succsefully!")
+
+            self.check_log_size("/main/web_files/log.html", 2000)
+            _stream = open("/main/web_files/log.html", "a+")
+            print("[{}][{}][{}]: {}".format(time.ticks_ms(), self._level_str(level), self.name, msg))
             if not args:
-                print(msg, file=_stream)
-            else:
+                try:
+                    print("[{}][{}][{}]: {}".format(time.ticks_ms(), self._level_str(level), self.name, msg), file=_stream)
+                except Exception as err:
+                    print("Exception: %s", err)
+            else: # TUKAJ MI ŠE NI JASNO KAJ IN KAKO
                 print(msg % args, file=_stream)
+            _stream.close()
 
     def debug(self, msg, *args):
         self.log(DEBUG, msg, *args)
@@ -65,7 +100,6 @@ class Logger:
 
     def exception(self, msg, *args):
         self.exc(sys.exc_info()[1], msg, *args)
-
 
 _level = INFO
 _loggers = {}

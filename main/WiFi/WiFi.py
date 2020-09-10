@@ -44,3 +44,6 @@ class WiFi:
             else:
                 self.led.set_state(2)
             sleep(0.2)
+
+    def get_IP(self):
+        return self.station.ifconfig()[0]

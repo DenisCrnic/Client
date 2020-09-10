@@ -1,4 +1,3 @@
-
 import time
 from main import ota_updater
 from main.MQTT import MQTT
@@ -12,8 +11,8 @@ class Main:
   def __init__(self):
     # Input sensors
     self._pins = (36, 39, 34)
-    self.topics = ('SECCS/client/load_1', 'SECCS/client/load_2', 'SECCS/client/load_3')
-    self.CLIENT_root_topic = b'SECCS/client'
+    self.topics = ('SECCS/client_2/load_1', 'SECCS/client_2/load_2', 'SECCS/client_2/load_3')
+    self.CLIENT_root_topic = b'SECCS/client_2'
     self.input_devices = [ADC(Pin(x)) for x in self._pins]
 
     # Nastavi branje 0 - 3.6 V (default 0 - 1 V)
@@ -60,12 +59,13 @@ class Main:
 
   def start(self):
     self.mqtt_connect()
-    self.web = Web.Web("192.168.1.82") # Obtain any IP or hostname from wifi initialisation
+    self.web = Web.Web(self.wifi.get_IP()) # Obtain any IP or hostname from wifi initialisation
+    print("Shit happens")
 
 main = Main()
 
 def download_and_install_update_if_available():
-    o = ota_updater.OTAUpdater('https://github.com/DenisCrnic/SECCS_client/')
+    o = ota_updater.OTAUpdater('https://github.com/DenisCrnic/SECCS_client')
     o.download_and_install_update_if_available()
     o.check_for_update_to_install_during_next_reboot()
 
