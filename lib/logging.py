@@ -1,10 +1,7 @@
 import sys
 import time
 import uos
-<<<<<<< HEAD
 import uerrno
-=======
->>>>>>> d374d6200f5277db1067fa272415d52d6ba77b18
 
 CRITICAL = 50
 ERROR    = 40
