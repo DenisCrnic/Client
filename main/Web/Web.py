@@ -21,6 +21,13 @@ def index(req, resp):
     for line in htmlFile:
       yield from resp.awrite(line)
 
+@app.route("/log")
+def log(req, resp):
+    yield from picoweb.start_response(resp)
+    htmlFile = open('/main/web_files/log.html', 'r')
+    for line in htmlFile:
+        yield from resp.awrite(line + "</br>")
+
 # @app.route("/web_files/dht.jpg")
 # def squares(req, resp):
 #     yield from resp.awrite(b"Static image: <img src='dht.jpg'><br />")
