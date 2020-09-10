@@ -1,7 +1,10 @@
 import sys
 import time
 import uos
+<<<<<<< HEAD
 import uerrno
+=======
+>>>>>>> d374d6200f5277db1067fa272415d52d6ba77b18
 
 CRITICAL = 50
 ERROR    = 40
@@ -62,11 +65,12 @@ class Logger:
             except OSError as exc:
                 print(exc)
                 if exc.args[0] == uerrno.ENOENT:
-                    print("File Doesn't exist, creating one")
+                    # print("File Doesn't exist, creating one")
                     temp_file = open("/main/web_files/log.html", "w")
                     temp_file.close()
-                    print("File created succsefully!")
+                    # print("File created succsefully!")
 
+            # print(uos.stat("/main/web_files/log.html")[6])
             self.check_log_size("/main/web_files/log.html", 2000)
             _stream = open("/main/web_files/log.html", "a+")
             print("[{}][{}][{}]: {}".format(time.ticks_ms(), self._level_str(level), self.name, msg))
