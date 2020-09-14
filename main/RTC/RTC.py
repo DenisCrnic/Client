@@ -24,7 +24,7 @@ class RTC:
     def __init__(self):
         self.rtc = machine.RTC()
         self.rtc.init((2020, 9, 11, 5, 20, 4, 30, 0))
-        log.info(self.rtc.datetime())
+        # log.info(self.rtc.datetime())
         _thread.start_new_thread(self.run, ())
     
     def run(self):
