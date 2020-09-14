@@ -5,7 +5,11 @@ import usocket
 import os
 import gc
 import machine
+import logging
 
+# Logging initialisation
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__file__)
 
 class OTAUpdater:
 
@@ -19,70 +23,70 @@ class OTAUpdater:
         current_version = self.get_version(self.modulepath(self.main_dir))
         latest_version = self.get_latest_version()
 
-        print('Checking version... ')
-        print('\tCurrent version: ', current_version)
-        print('\tLatest version: ', latest_version)
+        log.info('Checking version... ')
+        log.info('\tCurrent version: %s' % current_version)
+        log.info('\tLatest version: %s' % latest_version)
         if latest_version > current_version:
-            print('New version available, will download and install on next reboot')
+            log.info('New version available, will download and install on next reboot')
             try:
                 os.mkdir(self.modulepath('next'))
             except:
-                print("Folder already exists")
+                log.info("Folder already exists")
 
-            with open(self.modulepath('next/.version_on_reboot'), 'w') as versionfile:
+            with open(self.modulepath('next/version_on_reboot'), 'w') as versionfile:
                 versionfile.write(latest_version)
                 versionfile.close()
-                print("Rebooting")
+                log.info("Rebooting")
                 machine.reset() # automatically reboot when finding new version
             
 
     def download_and_install_update_if_available(self):
         try:
             if 'next' in os.listdir(self.module):
-                if '.version_on_reboot' in os.listdir(self.modulepath('next')):
-                    latest_version = self.get_version(self.modulepath('next'), '.version_on_reboot')
-                    print('New update found: ', latest_version)
+                if 'version_on_reboot' in os.listdir(self.modulepath('next')):
+                    latest_version = self.get_version(self.modulepath('next'), 'version_on_reboot')
+                    log.info('New update found: %s' % latest_version)
                     self._download_and_install_update(latest_version)
             else:
-                print('No new updates found...')
+                log.info('No new updates found...')
         except:
-            print("Update already downloaded")
+            log.info("Update already downloaded")
             pass
 
     def _download_and_install_update(self, latest_version):
         self.download_all_files(self.github_repo + '/contents/' + self.main_dir, latest_version)
         self.rmtree(self.modulepath(self.main_dir))
-        os.rename(self.modulepath('next/.version_on_reboot'), self.modulepath('next/.version'))
+        os.rename(self.modulepath('next/version_on_reboot'), self.modulepath('next/version'))
         os.rename(self.modulepath('next'), self.modulepath(self.main_dir))
-        print('Update installed (', latest_version, '), will reboot now')
+        log.info('Update installed (' + latest_version + '), will reboot now')
         machine.reset()
 
     def apply_pending_updates_if_available(self):
         if 'next' in os.listdir(self.module):
-            if '.version' in os.listdir(self.modulepath('next')):
+            if 'version' in os.listdir(self.modulepath('next')):
                 pending_update_version = self.get_version(self.modulepath('next'))
-                print('Pending update found: ', pending_update_version)
+                log.info('Pending update found: %s' % pending_update_version)
                 self.rmtree(self.modulepath(self.main_dir))
                 os.rename(self.modulepath('next'), self.modulepath(self.main_dir))
-                print('Update applied (', pending_update_version, '), ready to rock and roll')
+                log.info('Update applied (' + pending_update_version + '), ready to rock and roll')
             else:
-                print('Corrupt pending update found, discarding...')
+                log.info('Corrupt pending update found, discarding...')
                 self.rmtree(self.modulepath('next'))
         else:
-            print('No pending update found')
+            log.info('No pending update found')
 
     def download_updates_if_available(self):
         current_version = self.get_version(self.modulepath(self.main_dir))
         latest_version = self.get_latest_version()
 
-        print('Checking version... ')
-        print('\tCurrent version: ', current_version)
-        print('\tLatest version: ', latest_version)
+        log.info('Checking version... ')
+        log.info('\tCurrent version: %s' % current_version)
+        log.info('\tLatest version: %s' % latest_version)
         if latest_version > current_version:
-            print('Updating...')
+            log.info('Updating...')
             os.mkdir(self.modulepath('next'))
             self.download_all_files(self.github_repo + '/contents/' + self.main_dir, latest_version)
-            with open(self.modulepath('next/.version'), 'w') as versionfile:
+            with open(self.modulepath('next/version'), 'w') as versionfile:
                 versionfile.write(latest_version)
                 versionfile.close()
 
@@ -99,7 +103,7 @@ class OTAUpdater:
                 os.remove(directory + '/' + entry[0])
         os.rmdir(directory)
 
-    def get_version(self, directory, version_file_name='.version'):
+    def get_version(self, directory, version_file_name='version'):
         if version_file_name in os.listdir(directory):
             f = open(directory + '/' + version_file_name)
             version = f.read()
@@ -128,7 +132,7 @@ class OTAUpdater:
         file_list.close()
 
     def download_file(self, url, path):
-        print('\tDownloading: ', path)
+        log.info('\tDownloading: %s' % path)
         with open(path, 'w') as outfile:
             try:
                 response = self.http_client.get(url)
@@ -228,7 +232,6 @@ class HttpClient:
                 s.write(data)
 
             l = s.readline()
-            # print(l)
             l = l.split(None, 2)
             status = int(l[1])
             reason = ''
@@ -238,7 +241,6 @@ class HttpClient:
                 l = s.readline()
                 if not l or l == b'\r\n':
                     break
-                # print(l)
                 if l.startswith(b'Transfer-Encoding:'):
                     if b'chunked' in l:
                         raise ValueError('Unsupported ' + l)

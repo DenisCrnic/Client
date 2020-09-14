@@ -39,26 +39,27 @@ class Logger:
 
     def check_log_size(self, log_file, max_log_size):
         while(uos.stat(log_file)[6] > max_log_size):
-            print("Log file is TOO Large")
-            print("Opening original file")
+            # print("Log file is TOO Large")
+            # print("Opening original file")
             with open(log_file, 'r') as original_file:
                 data = original_file.read().splitlines(True)
-                print("Closing original file")
+                # print("Closing original file")
                 original_file.close()
-                
-            print("Opening new file")
+
+            # print("Opening new file")
             with open(log_file, 'w') as new_file:
-                print("Writing new file")
+                # print("Writing new file")
                 for line in data[1:]:
                     new_file.write(line)
-                print("Closing new file")
+                # print("Closing new file")
                 new_file.close()
-            print("OK")
+            # print("OK")
 
     def log(self, level, msg, *args):
         if level >= (self.level or _level):
             try:
-                print(uos.stat("/main/web_files/log.html")[6])
+                # print(uos.stat("/main/web_files/log.html")[6])
+                self.check_log_size("/main/web_files/log.html", 2000)
             except OSError as exc:
                 print(exc)
                 if exc.args[0] == uerrno.ENOENT:
@@ -66,9 +67,7 @@ class Logger:
                     temp_file = open("/main/web_files/log.html", "w")
                     temp_file.close()
                     # print("File created succsefully!")
-
-            # print(uos.stat("/main/web_files/log.html")[6])
-            self.check_log_size("/main/web_files/log.html", 2000)
+            
             _stream = open("/main/web_files/log.html", "a+")
             print("[{}][{}][{}]: {}".format(time.ticks_ms(), self._level_str(level), self.name, msg))
             if not args:

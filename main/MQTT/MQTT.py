@@ -14,12 +14,7 @@ from main import main
 from main.LED_indicator import LED_indicator
 import logging
 
-
-
 timer = machine.Timer(0)
-
-# Če se 10x poskušamo reconectat na broker, vrže recursion error.
-#  
 
 class MQTT:
     # Passed arg: server ip, main object with callback function
@@ -63,7 +58,7 @@ class MQTT:
             self.log.info("7")
             self.last_message_time = utime.ticks_ms()
             self.log.info("8")
-            self.log.info('Connected to %s MQTT broker', (self.server_ip))
+            self.log.info('Connected to %s MQTT broker' % self.server_ip)
             self.mqtt_state = True
             self.log.info("9")
             self.led.set_state(1)
@@ -77,11 +72,11 @@ class MQTT:
         # isto kot while not self.mqtt_state, le da kličemo dodatno funkcijo
         # da lahko upravjamo z indentifikacijsko led diodo
         while not self.isConnected():
-            # time.sleep(2)
+            time.sleep(0.1)
             self.connect()
 
     def sub_cb(self, topic, message):
-        self.log.info("%s %s", topic, message)
+        self.log.info("TOPIC: {} | MSG: {}".format(str(topic), str(message)))
         # Remember time of last message for conn check
         self.last_message_time = utime.ticks_ms()
         # self.log.info(utime.ticks_ms())
@@ -100,11 +95,16 @@ class MQTT:
         if self.mqtt_state:
             self.led.set_state(1)
             self.log.info("Server connection ... OK")
+            self.number_of_fails = 0
             return True
 
         else:
             self.led.set_state(2)
-            self.log.error("No connection to the server")
+            self.log.info("No connection to the server")
+            if(self.number_of_fails >= self.max_number_of_fails):
+                self.log.info("Tried reconnecting {}x, rebooting".format(self.number_of_fails))
+                machine.reset()
+            self.number_of_fails +=1
             return False
         
 
@@ -114,43 +114,25 @@ class MQTT:
             time.sleep(0.2)
             #self.log.info("Inside check message")
             try:
-                # Preglej če je v zadnjih $TIMEOUT sec prispelo katerokoli sporocilo
-                #self.log.info(utime.ticks_ms() - self.last_message_time < TIMEOUT) 
+            # Preglej če je v zadnjih $TIMEOUT sec prispelo katerokoli sporocilo
+            #self.log.info(utime.ticks_ms() - self.last_message_time < TIMEOUT) 
                 if (utime.ticks_ms() - self.last_message_time < TIMEOUT): # ta čas ne sme biti daljši od keep alive tima (v funkciji __init__())
-                    #self.log.info("Sporocilo je prispelo v zadnjih %d sec", TIMEOUT/1000)
-                    self.number_of_fails = 0
                     # Če ja, potem poslušaj naprej ter ponovi vse skupaj
                     self.client.check_msg()
                 
                 else:
                     self.log.info("Sporocilo NI prispelo!!!!!!!")
                     # Če že 20 sec ni bilo sporočila, pingni, ter poslušaj odgovor
-                    self.number_of_fails += 1
                     # nmesto pinga ustvari ping topic
-                    self.log.error("ping 1")
+                    # self.log.error("ping 1")
                     self.ping()
-                    self.log.error("ping 2")
+                    # self.log.error("ping 2")
                     time.sleep(0.2)
                     while self.client.check_msg():
-                        self.log.error("ping 3")
-                        # pass
-
-                    # Ko dovoljkrat ne dobimo odgovora na ping pomeni da se je server sesul
-                    
-                    if self.number_of_fails == self.max_number_of_fails:
-                        self.log.error("Katastrofa, server se je sesul")
-                        self.mqtt_state = False
-                        raise Exception("Server not responding")
+                        # self.log.error("ping 3")
+                        pass
 
             except Exception as err:
-                self.log.error("Exception: %s", err)
+                self.log.error("Exception: %s" % err)
                 self.mqtt_state = False
                 self.reconnect()
-
-
-    # def send_state(self, timer):
-    #     try:
-    #         self.client.publish(MQTT_STATE_TOPIC, '1')
-    #     except OSError as err:
-    #         self.mqtt_state = False
-    #         self.log.error("OS error: %s", err)
